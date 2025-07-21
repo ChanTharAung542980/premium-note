@@ -1,0 +1,3330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Note App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            height: 100vh;
+            overflow: hidden;
+            color: #333;
+        }
+        
+        .screen {
+            display: none;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .auth-form {
+            max-width: 350px;
+            margin: 40px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .auth-form input, .auth-form button {
+            padding: 14px 18px;
+            font-size: 17px;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-form input:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.2);
+        }
+        
+        button {
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .auth-form button {
+            background: linear-gradient(135deg, #2196F3, #0d47a1);
+            color: white;
+            padding: 14px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+            font-size: 17px;
+        }
+        
+        .auth-form button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .welcome-text {
+            text-align: center;
+            font-size: 34px;
+            font-weight: 700;
+            color: #0d47a1;
+            margin-top: 50px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #2196F3, #0d47a1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        #menu-toggle {
+            position: fixed;
+            width: 36px;
+            height: 36px;
+            top: 20px;
+            left: 10px;
+            z-index: 101;
+            font-size: 15px;
+            background: linear-gradient(135deg, #2196F3, #0d47a1);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        #navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 5px 0 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        #navbar.show {
+            transform: translateX(0);
+        }
+        
+        #navbar ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            flex-grow: 1;
+        }
+        
+        #navbar ul li {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+        }
+        
+        #navbar ul li:hover {
+            background: #34495e;
+            color: #90caf9;
+            transform: translateX(8px);
+        }
+        
+        #navbar .logout-container {
+            margin-top: 0;
+             margin-bottom: 90px;
+            padding-top: 20px;
+            border-top: 1px solid #34495e;
+            width: 100%;
+        }
+        
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2196F3, #0d47a1);
+            color: white;
+            font-size: 40px;
+            border: none;
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 90;
+            transition: all 0.3s ease;
+        }
+        
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 12px 25px rgba(33, 150, 243, 0.5);
+        }
+        
+        .note-list-item {
+            padding: 20px;
+            margin: 18px 0;
+            background: linear-gradient(to right, #e3f2fd, #bbdefb);
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 5px solid #2196F3;
+            position: relative;
+        }
+        
+        .note-list-item:hover {
+            transform: translateX(8px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(to right, #d1e7ff, #a6d0ff);
+        }
+        
+        .note-title {
+            font-weight: 700;
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .note-preview {
+            font-size: 16px;
+            color: #666;
+            margin-top: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 32px;
+            cursor: pointer;
+            color: #2196f3;
+            padding: 10px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(33, 150, 243, 0.1);
+            transition: all 0.3s ease;
+            z-index: 50;
+        }
+        
+        .back-button:hover {
+            background: rgba(33, 150, 243, 0.2);
+            transform: translateX(-5px);
+        }
+        
+        .note-editor {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            min-height: 450px;
+            max-height: 70vh;
+            overflow-y: auto;
+            font-size: 18px;
+            line-height: 1.7;
+            border: 1px solid #eee;
+        }
+        
+        .security-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+            gap: 35px;
+        }
+        
+        .security-btn {
+            width: 280px;
+            padding: 30px;
+            border-radius: 25px;
+            border: none;
+            font-size: 22px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .security-btn.pictures {
+            background: linear-gradient(135deg, #2196F3, #0d47a1);
+            color: white;
+        }
+        
+        .security-btn i {
+            font-size: 52px;
+        }
+        
+        .security-btn:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .security-item {
+            padding: 18px;
+            margin: 18px 0;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .security-item-content {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .security-item-number {
+            background: #2196F3;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .security-item-name {
+            font-weight: 700;
+            color: #333;
+            font-size: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+        
+        .security-item-actions {
+            display: flex;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        
+        .security-item-action {
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .security-item-action.view {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .security-item-action.download {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .security-item-action.delete {
+            background: #f44336;
+            color: white;
+        }
+        
+        .file-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .file-modal-content {
+            background: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 850px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+        }
+        
+        .file-modal-header {
+            padding: 18px 25px;
+            background: #f5f5f5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .file-modal-title {
+            font-weight: 700;
+            color: #333;
+            font-size: 20px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-right: 20px;
+        }
+        
+        .file-modal-close {
+            background: #f44336;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-modal-close:hover {
+            transform: scale(1.1);
+        }
+        
+        .file-modal-body {
+            padding: 25px;
+            max-height: 80vh;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .add-media-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4CAF50, #2e7d32);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 35px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 50;
+            transition: all 0.3s;
+        }
+        
+        .add-media-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        h2 {
+            text-align: center;
+            color: #0d47a1;
+            margin: 25px 0;
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2196F3, #0d47a1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .grid-screen {
+            margin-top: 80px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            padding: 25px;
+        }
+        
+        .grid-item {
+            background: white;
+            border-radius: 18px;
+            padding: 25px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .grid-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .grid-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, #2196F3, #0d47a1);
+        }
+        
+        .auth-links {
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        
+        .auth-links div {
+            color: #2196f3;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .auth-links div:hover {
+            color: #0d47a1;
+            text-decoration: underline;
+        }
+        
+        .message-box {
+            text-align: center;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+            font-weight: 700;
+        }
+        
+        .note-list-container {
+            max-height: calc(100vh - 140px);
+            overflow-y: auto;
+            padding: 20px;
+            margin-top: 80px;
+        }
+        
+        .security-scroll-container {
+            max-height: calc(100vh - 220px);
+            overflow-y: auto;
+            padding: 25px;
+        }
+        
+        .save-btn-top {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4CAF50, #2e7d32);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 35px;
+            cursor: pointer;
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 60;
+            transition: all 0.3s;
+            font-size: 15px;
+        }
+        
+        .save-btn-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        #edit-title {
+            padding: 18px;
+            font-size: 22px;
+            font-weight: 700;
+            border-radius: 15px;
+            border: 1px solid #e0e0e0;
+            width: 100%;
+            margin-bottom: 10px;
+            background: #e3f2fd;
+        }
+        
+        .top-toolbar {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 40;
+        }
+        
+        .tool-btn {
+            background: linear-gradient(135deg, #2196F3, #0d47a1);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 35px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tool-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .open-note-btn {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+        
+        .open-note-btn:hover {
+            background: #0d47a1;
+            transform: translateY(-3px);
+        }
+        
+        /* Happy Days styles */
+        .entry {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .entry::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, #2196F3, #0d47a1);
+        }
+        
+        .entry input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        /* Contact styles */
+        .contact-entry {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .contact-entry::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, #2196F3, #0d47a1);
+        }
+        
+        .contact-entry input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 15px;
+            max-width: 45%;
+        }
+        
+        /* Link styles */
+        .link-entry {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .link-entry::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, #2196F3, #0d47a1);
+        }
+        
+        .link-entry input {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 15px;
+        }
+        
+        /* Forgot Password Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            position: relative;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2196F3;
+            margin-bottom: 20px;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+        
+        .modal-btn {
+            padding: 12px 25px;
+            border-radius: 35px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .modal-btn:hover {
+            background: #0d47a1;
+            transform: translateY(-3px);
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #f44336;
+            font-size: 30px;
+            cursor: pointer;
+        }
+        
+        /* Error message style */
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        /* Success message style */
+        .success-message {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        /* Audio recording indicator */
+        .recording-indicator {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f44336;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Audio recording controls */
+        .audio-container {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+        }
+        
+        .audio-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .audio-btn {
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .audio-btn.record {
+            background: #f44336;
+            color: white;
+        }
+        
+        .audio-btn.stop {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .audio-btn.delete {
+            background: #555;
+            color: white;
+        }
+        
+        .audio-player-container {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* File upload styles */
+        .file-upload-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 15px;
+            border: 2px dashed #ddd;
+        }
+        
+        .file-upload-container h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #2196F3;
+        }
+        
+        .file-list {
+            margin-top: 20px;
+        }
+        
+        .file-item {
+            padding: 12px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .file-name {
+            font-weight: 600;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        /* Valentine styles */
+        .valentine-container {
+            background: linear-gradient(135deg, #ff0844, #ff6b8b);
+            height: 100%;
+            overflow: auto;
+            position: relative;
+            padding: 0;
+        }
+        
+        .valentine-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 0;
+            box-shadow: none;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .valentine-header {
+            background: linear-gradient(to right, #ff0844, #ff6b8b);
+            color: white;
+            padding: 18px 25px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .valentine-header h1 {
+            font-size: 1.6rem;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
+        }
+        
+        .valentine-main {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 18px;
+            gap: 18px;
+            height: calc(100% - 120px);
+            overflow-y: auto;
+        }
+        
+        .valentine-profiles {
+            flex: 1;
+            display: flex;
+            gap: 15px;
+            min-width: 330px;
+            height: 50%;
+        }
+        
+        .valentine-profile-card {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            padding: 14px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .valentine-profile-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, #ff0844, #ff6b8b);
+        }
+        
+        .valentine-profile-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .valentine-profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .valentine-profile-pic {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 3px solid #ff6b8b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .valentine-profile-pic:hover {
+            transform: scale(1.05);
+            border-color: #ff0844;
+            box-shadow: 0 0 12px rgba(255, 8, 68, 0.3);
+        }
+        
+        .valentine-profile-pic i {
+            font-size: 24px;
+            color: #ff0844;
+        }
+        
+        .valentine-profile-pic img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .valentine-profile-info {
+            text-align: center;
+        }
+        
+        .valentine-profile-info h3 {
+            font-size: 1rem;
+            color: #ff0844;
+            margin-bottom: 3px;
+        }
+        
+        .valentine-profile-info p {
+            font-size: 0.75rem;
+            color: #777;
+        }
+        
+        .valentine-birthday-input {
+            display: flex;
+            gap: 7px;
+            margin-top: 8px;
+            justify-content: center;
+        }
+        
+        .valentine-birthday-input input {
+            width: 45px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            transition: border-color 0.3s;
+            background: #fff9fb;
+        }
+        
+        .valentine-birthday-input input:focus {
+            outline: none;
+            border-color: #ff6b8b;
+            box-shadow: 0 0 0 2px rgba(255, 107, 139, 0.2);
+        }
+        
+        .valentine-age-display {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #555;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .valentine-age-display span {
+            font-weight: bold;
+            color: #ff0844;
+        }
+        
+        .valentine-love-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            min-width: 280px;
+            height: 100%;
+        }
+        
+        .valentine-love-start {
+            background: white;
+            border-radius: 15px;
+            padding: 14px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            height: 48%;
+        }
+        
+        .valentine-love-start::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, #ff0844, #ff6b8b);
+        }
+        
+        .valentine-section-title {
+            font-size: 1rem;
+            color: #ff0844;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+        }
+        
+        .valentine-section-title i {
+            font-size: 1.1rem;
+        }
+        
+        .valentine-date-time-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+            justify-content: center;
+        }
+        
+        .valentine-date-time-input input {
+            padding: 7px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            transition: border-color 0.3s;
+            background: #fff9fb;
+        }
+        
+        .valentine-date-time-input input:focus {
+            outline: none;
+            border-color: #ff6b8b;
+            box-shadow: 0 0 0 2px rgba(255, 107, 139, 0.2);
+        }
+        
+        .valentine-date-input {
+            width: 140px;
+        }
+        
+        .valentine-time-input {
+            width: 90px;
+        }
+        
+        .valentine-timer {
+            background: linear-gradient(135deg, #ff0844, #ff6b8b);
+            border-radius: 15px;
+            padding: 18px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            color: white;
+            position: relative;
+            overflow: hidden;
+            height: 48%;
+        }
+        
+        .valentine-timer::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+            animation: pulse 4s infinite;
+        }
+        
+        .valentine-timer-title {
+            font-size: 1.1rem;
+            margin-bottom: 14px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .valentine-time-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .valentine-time-box {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 9px 7px;
+            min-width: 60px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .valentine-time-box:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .valentine-time-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 3px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .valentine-time-label {
+            font-size: 0.7rem;
+            opacity: 0.9;
+        }
+        
+        .valentine-heart-divider {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+            gap: 5px;
+        }
+        
+        .valentine-heart-divider i {
+            color: #ff0844;
+            font-size: 1.1rem;
+            animation: heartbeat 1.5s infinite;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+        }
+        
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            5% { transform: scale(1.2); }
+            10% { transform: scale(1); }
+            15% { transform: scale(1.3); }
+            50% { transform: scale(1); }
+            100% { transform: scale(1); }
+        }
+        
+        .valentine-action-btn {
+            background: linear-gradient(to right, #ff0844, #ff6b8b);
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(255, 107, 139, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            margin: 7px auto 0;
+            width: 100%;
+            max-width: 230px;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .valentine-action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #ff6b8b, #ff0844);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: -1;
+        }
+        
+        .valentine-action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(255, 107, 139, 0.6);
+        }
+        
+        .valentine-action-btn:hover::before {
+            opacity: 1;
+        }
+        
+        .valentine-footer {
+            text-align: center;
+            padding: 12px;
+            color: #777;
+            font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.7);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .valentine-file-input {
+            display: none;
+        }
+        
+        .valentine-message {
+            text-align: center;
+            padding: 8px;
+            background: rgba(255, 221, 230, 0.5);
+            border-radius: 8px;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #ff0844;
+            display: none;
+            font-weight: 500;
+        }
+        
+        .valentine-message.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        .valentine-love-message {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #ff0844;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        /* Floating hearts */
+        .heart {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: #ff6b8b;
+            opacity: 0.7;
+            pointer-events: none;
+            animation: float 6s linear forwards;
+        }
+        
+        .heart::before,
+        .heart::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: #ff6b8b;
+            border-radius: 50%;
+        }
+        
+        .heart::before {
+            top: -7px;
+            left: 0;
+        }
+        
+        .heart::after {
+            top: 0;
+            left: 7px;
+        }
+        
+        @keyframes float {
+            from {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* Save button for Happy Days */
+        .happy-days-save-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4CAF50, #2e7d32);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 35px;
+            cursor: pointer;
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 60;
+            transition: all 0.3s;
+            font-size: 15px;
+        }
+        
+        .happy-days-save-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* Microphone permission modal */
+        .mic-permission-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mic-permission-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .mic-permission-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #2196F3;
+        }
+        
+        .mic-permission-text {
+            margin-bottom: 25px;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+        
+        .mic-permission-btn {
+            padding: 12px 25px;
+            border-radius: 35px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: inline-block;
+            margin: 0 10px;
+        }
+        
+        .mic-permission-btn.deny {
+            background: #f44336;
+        }
+        
+        .mic-permission-btn:hover {
+            transform: translateY(-3px);
+        }
+        
+        #drawer-profile {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background-color: #2c3e50;
+            padding-bottom: 10px;
+            z-index: 100;
+        }
+
+        #navbar ul {
+            padding-top: 50px; /* profile section မတော်ကပ်အောင် */
+        }
+        
+        /* New UI enhancements */
+        .glow {
+            box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
+        }
+        
+        .ripple-effect {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ripple-effect:after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .ripple-effect:focus:after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            20% {
+                transform: scale(25, 25);
+                opacity: 0.3;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(40, 40);
+            }
+        }
+        
+        .wave {
+            position: relative;
+        }
+        
+        .wave::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #2196F3, transparent);
+            animation: wave 2s linear infinite;
+        }
+        
+        @keyframes wave {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Authentication Screen -->
+    <div class="screen active" id="screen-auth">
+        <div class="welcome-text">📒 Premium Note App</div>
+        <div class="auth-form">
+            <input type="text" id="login-nickname" placeholder="Nickname" value="">
+            <div style="position: relative;">
+                <input type="password" id="login-password" placeholder="Password" value="" style="width:100%;">
+                <span onclick="togglePassword()" style="position:absolute;right:18px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:20px;">👁</span>
+            </div>
+            <button onclick="loginAccount()"><i class="fas fa-sign-in-alt"></i> Log In</button>
+            <div class="auth-links">
+                <div onclick="showForgetModal()"><i class="fas fa-key"></i> Forgot Password?</div>
+                <div onclick="nextScreen('screen-create')"><i class="fas fa-user-plus"></i> Create Account</div>
+            </div>
+            <div id="auth-msg" class="error-message" style="display:none;"></div>
+        </div>
+    </div>
+    
+    <!-- Notes List Screen -->
+    <div class="screen" id="screen-notes">
+        <button id="menu-toggle" onclick="toggleMenu(event)"><i class="fas fa-bars"></i> </button>
+        <nav id="navbar" onclick="event.stopPropagation()">
+            <div id="drawer-profile" style="display:flex; gap:15px; align-items:center;">
+                <img id="drawer-avatar" style="width:60px; height:60px; border-radius:50%; border:2px solid #2196F3; display:none;">
+                <div>
+                    <h3 id="drawer-nickname" style="color:#90caf9; font-size:20px; margin-bottom:5px;">Nickname</h3>
+                    <div class="small-text" id="drawer-gmail" onclick="toggleGmail()" style="font-size:10px; color:#bdc3c7; cursor:pointer;">user@gmail.com</div>
+                </div>
+            </div>
+            <ul>
+                <li onclick="addProfile()"><i class="fas fa-plus-circle"></i> Add Profile</li>
+                <li onclick="nextScreen('screen-happy')"><i class="fas fa-calendar-day"></i> Happy Days</li>
+                <li onclick="nextScreen('screen-personal')"><i class="fas fa-user"></i> My Personal</li>
+                <li onclick="nextScreen('screen-contact')"><i class="fas fa-address-book"></i> Contact Note</li>
+                <li onclick="nextScreen('screen-links')"><i class="fas fa-link"></i> My Link Collection</li>
+                <li onclick="nextScreen('screen-security')"><i class="fas fa-shield-alt"></i> Security</li>
+                <li onclick="nextScreen('screen-valentine')"><i class="fas fa-heart"></i> My Love</li>
+            </ul>
+            <div class="logout-container">
+                <li onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</li>
+            </div>
+        </nav>
+        <input type="file" id="profile-upload" accept="image/*" style="display:none" onchange="uploadProfile(event)">
+        <!-- search bar and clear button -->
+        <div id="search-bar-container" style="position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 50;">
+          <input type="text" id="global-search" placeholder="မှတ်စု ရှာဖွေရန်..." 
+                 style="padding: 10px; border-radius: 10px; border: 1px solid #ccc; font-size: 16px; width: 220px;">
+          <button onclick="loadNotes()" 
+                  style="background: linear-gradient(135deg, #2196F3, #0d47a1); color: white; padding: 8px 10px; border: none; border-radius: 6px; font-weight: bold;">
+            close
+          </button>
+        </div>
+        <button class="fab" onclick="createNewNote()">＋</button>
+        
+        <div class="note-list-container" id="note-list-container">
+            <div id="note-list"></div>
+        </div>
+    </div>
+
+    <!-- Edit Note Screen -->
+    <div class="screen" id="screen-edit-note">
+        <div class="back-button" onclick="nextScreen('screen-notes')">←</div>
+        <div class="top-toolbar">
+            <button class="tool-btn" id="audio-btn" onclick="requestMicrophoneAccess()">
+                <i class="fas fa-microphone"></i> Add Audio
+            </button>
+        </div>
+        <button id="save-btn-top" class="save-btn-top" onclick="saveNote()"><i class="fas fa-save"></i> Save</button>
+        <div style="max-width:800px; margin:60px auto 30px;">
+            <input type="text" id="edit-title" placeholder="Note Title">
+            <div id="edit-content" class="note-editor" placeholder="Write your note..." contenteditable="true"></div>
+            
+            <!-- Audio recording controls -->
+            <div class="audio-container" id="audio-controls-container" style="display:none;">
+                <h3><i class="fas fa-microphone"></i> Audio Recording</h3>
+                <div class="audio-controls">
+                    <button id="record-btn" class="audio-btn record" onclick="startRecording()">
+                        <i class="fas fa-circle"></i> Record
+                    </button>
+                    <button id="stop-btn" class="audio-btn stop" onclick="stopRecording()" disabled>
+                        <i class="fas fa-stop"></i> Stop
+                    </button>
+                    <button id="delete-btn" class="audio-btn delete" onclick="deleteRecording()" disabled>
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+                <div id="recording-status" style="margin-top:10px; font-size:14px; color:#666;">
+                    Ready to record
+                </div>
+                <div id="audio-player-container" class="audio-player-container" style="display:none;">
+                    <audio id="audio-player" controls></audio>
+                    <button class="audio-btn delete" onclick="deleteRecording()">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Account Screen -->
+    <div class="screen" id="screen-create">
+        <div class="auth-form">
+            <h3 style="text-align:center; color:#2196F3; margin-bottom:25px; font-size:24px;"><i class="fas fa-user-plus"></i> Create Account</h3>
+            <input type="text" id="create-nickname" placeholder="Nickname" value="">
+            <input type="password" id="create-password" placeholder="Password" value="">
+            <input type="email" id="create-gmail" placeholder="Gmail" value="">
+            <button onclick="createAccount()"><i class="fas fa-user-check"></i> Create Account</button>
+            <div style="text-align:center;margin-top:25px;font-size:17px;color:#2196f3;cursor:pointer;font-weight:600;" onclick="nextScreen('screen-auth')">
+                <i class="fas fa-arrow-left"></i> Back to Login
+            </div>
+            <div id="create-msg" class="error-message" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- Happy Days Screen -->
+    <div class="screen" id="screen-happy">
+        <div class="back-button" onclick="nextScreen('screen-notes')">←</div>
+        <button class="happy-days-save-btn" onclick="saveHappyDays()">
+            <i class="fas fa-save"></i> Save & Calculate
+        </button>
+        <h2><i class="fas fa-calendar-day"></i> Happy Days</h2>
+        <div class="grid-screen">
+            <div class="grid-item">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid #eee;">
+                    <div style="font-weight:700; color:#2196F3; font-size:20px;">Special Events</div>
+                    <div style="display:flex; gap:12px;">
+                        <button style="background:#4CAF50; color:white; border:none; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:20px;" onclick="addHappyDay()">+</button>
+                        <button style="background:#f44336; color:white; border:none; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:20px;" onclick="removeLastHappyDay()">-</button>
+                    </div>
+                </div>
+                <div id="happy-days-list"></div>
+            </div>
+            <div class="grid-item">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid #eee;">
+                    <div style="font-weight:700; color:#2196F3; font-size:20px;">Alarms</div>
+                </div>
+                <div style="padding:15px;">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+                        <input type="checkbox" id="alarm1" checked style="width:20px; height:20px;">
+                        <label for="alarm1" style="font-size:17px;">Notify me on event day</label>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <input type="checkbox" id="alarm2" checked style="width:20px; height:20px;">
+                        <label for="alarm2" style="font-size:17px;">Play sound notification</label>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-item">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid #eee;">
+                    <div style="font-weight:700; color:#2196F3; font-size:20px;">Days Calculation</div>
+                </div>
+                <div class="days-calculation" id="days-calculation" style="padding:15px;">
+                    <div style="text-align:center; padding:30px 0; color:#777; font-size:17px;">Add events to see calculations</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Personal Notes Screen -->
+    <div class="screen" id="screen-personal">
+        <div class="back-button" onclick="nextScreen('screen-notes')">←</div>
+        <h2><i class="fas fa-user"></i> My Personal Notes</h2>
+        <div style="max-width:800px; margin:40px auto; padding:30px; background:white; border-radius:20px; box-shadow:0 6px 20px rgba(0,0,0,0.1);">
+            <textarea class="personal-note-area" id="personal-note" placeholder="Write your personal notes here..." style="width:100%; height:350px; padding:20px; border-radius:15px; border:1px solid #eee; font-size:17px;"></textarea>
+            <div style="display:flex; justify-content:flex-end; gap:20px; margin-top:25px;">
+                <button class="save-personal-btn" onclick="savePersonalNote()" style="background:#4CAF50; color:white; padding:12px 25px; border-radius:10px; border:none; cursor:pointer; font-weight:700; display:flex; align-items:center; gap:10px; font-size:17px;"><i class="fas fa-save"></i> Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Notes Screen -->
+    <div class="screen" id="screen-contact">
+        <div class="back-button" onclick="nextScreen('screen-notes')">←</div>
+        <button class="save-btn-top" onclick="saveContacts()"><i class="fas fa-save"></i> Save Contacts</button>
+        <h2><i class="fas fa-address-book"></i> Contact Notes</h2>
+        <div class="grid-item" style="max-width:800px; margin:40px auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; padding-bottom:20px; border-bottom:1px solid #eee;">
+                <div style="font-weight:700; color:#2196F3; font-size:20px;">My Contacts</div>
+                <div style="display:flex; gap:12px;">
+                    <button style="background:#4CAF50; color:white; border:none; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:20px;" onclick="addContact()">+</button>
+                    <button style="background:#f44336; color:white; border:none; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:20px;" onclick="removeLastContact()">-</button>
+                </div>
+            </div>
+            <div class="contact-scroll-container" id="contact-list"></div>
+        </div>
+    </div>
+
+    <!-- Links Screen -->
+    <div class="screen" id="screen-links">
+        <div class="back-button" onclick="nextScreen('screen-notes')">←</div>
+        <button class="save-btn-top" onclick="saveLinks()"><i class="fas fa-save"></i> Save Links</button>
+        <h2><i class="fas fa-link"></i> My Link Collection</h2>
+        <div class="grid-item" style="max-width:800px; margin:40px auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; padding-bottom:20px; border-bottom:1px solid #eee;">
+                <div style="font-weight:700; color:#2196F3; font-size:20px;">Saved Links</div>
+                <div style="display:flex; gap:12px;">
+                    <button style="background:#4CAF50; color:white; border:none; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:20px;" onclick="addLink()">+</button>
+                    <button style="background:#f44336; color:white; border:none; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:20px;" onclick="removeLastLink()">-</button>
+                </div>
+            </div>
+            <div class="link-scroll-container" id="link-list"></div>
+        </div>
+    </div>
+
+    <!-- Security Main Screen -->
+    <div class="screen" id="screen-security">
+        <div class="back-button" onclick="nextScreen('screen-notes')">←</div>
+        <h2><i class="fas fa-shield-alt"></i> Security Center</h2>
+        <div class="security-container">
+            <button class="security-btn pictures" onclick="nextScreen('screen-security-pictures')">
+                <i class="fas fa-images"></i> Pictures & PDFs
+            </button>
+        </div>
+    </div>
+
+    <!-- Security Pictures Screen -->
+    <div class="screen" id="screen-security-pictures">
+        <div class="back-button" onclick="nextScreen('screen-security')">←</div>
+        <button class="add-media-btn" onclick="document.getElementById('picture-upload').click()">
+            <i class="fas fa-plus"></i> Add Media
+        </button>
+        <input type="file" id="picture-upload" class="file-input" accept="image/*,application/pdf" onchange="uploadPicture(event)" multiple style="display:none">
+        <h2><i class="fas fa-images"></i> Security Pictures & PDFs</h2>
+        <div class="security-scroll-container" id="picture-list">
+            <div class="file-upload-container">
+                <h3>Uploaded Media</h3>
+                <div id="uploaded-media" class="file-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Valentine's Day Love Calculator Screen -->
+    <div class="screen" id="screen-valentine">
+        <div class="back-button" onclick="nextScreen('screen-notes')">←</div>
+        <div class="valentine-container">
+            <div class="valentine-content">
+                <header class="valentine-header">
+                    <h1><i class="fas fa-heart"></i> Love Calculator</h1>
+                </header>
+                
+                <div class="valentine-main">
+                    <div class="valentine-profiles">
+                        <div class="valentine-profile-card">
+                            <div class="valentine-profile-header">
+                                <div class="valentine-profile-pic" id="herProfilePic">
+                                    <i class="fas fa-female"></i>
+                                </div>
+                                <div class="valentine-profile-info">
+                                    <h3>Her Profile</h3>
+                                    <p>Upload photo & set birthday</p>
+                                </div>
+                            </div>
+                            
+                            <div class="valentine-birthday-input">
+                                <input type="number" id="herDay" placeholder="DD" min="1" max="31" value="15">
+                                <input type="number" id="herMonth" placeholder="MM" min="1" max="12" value="6">
+                                <input type="number" id="herYear" placeholder="YYYY" min="1900" max="2023" value="1995">
+                            </div>
+                            
+                            <div class="valentine-age-display">
+                                Age: <span id="herAge">28</span> years
+                            </div>
+                            
+                            <div class="valentine-message" id="herMessage">Profile updated!</div>
+                        </div>
+                        
+                        <div class="valentine-profile-card">
+                            <div class="valentine-profile-header">
+                                <div class="valentine-profile-pic" id="myProfilePic">
+                                    <i class="fas fa-male"></i>
+                                </div>
+                                <div class="valentine-profile-info">
+                                    <h3>My Profile</h3>
+                                    <p>Upload photo & set birthday</p>
+                                </div>
+                            </div>
+                            
+                            <div class="valentine-birthday-input">
+                                <input type="number" id="myDay" placeholder="DD" min="1" max="31" value="22">
+                                <input type="number" id="myMonth" placeholder="MM" min="1" max="12" value="3">
+                                <input type="number" id="myYear" placeholder="YYYY" min="1900" max="2023" value="1993">
+                            </div>
+                            
+                            <div class="valentine-age-display">
+                                Age: <span id="myAge">30</span> years
+                            </div>
+                            
+                            <div class="valentine-message" id="myMessage">Profile updated!</div>
+                        </div>
+                    </div>
+                    
+                    <div class="valentine-love-section">
+                        <div class="valentine-love-start">
+                            <h2 class="valentine-section-title"><i class="fas fa-heartbeat"></i> Our Love Journey</h2>
+                            
+                            <div class="valentine-date-time-input">
+                                <input type="date" id="loveDate" class="valentine-date-input" value="2020-02-14">
+                                <input type="time" id="loveTime" class="valentine-time-input" value="18:30">
+                            </div>
+                            
+                            <button class="valentine-action-btn" id="calculateBtn">
+                                <i class="fas fa-calculator"></i> Calculate Our Love
+                            </button>
+                            
+                            <div class="valentine-heart-divider">
+                                <i class="fas fa-heart"></i>
+                                <i class="fas fa-heart"></i>
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            
+                            <div class="valentine-message" id="loveMessage">Love journey calculated!</div>
+                            <div class="valentine-love-message">Every second with you is precious</div>
+                        </div>
+                        
+                        <div class="valentine-timer">
+                            <h2 class="valentine-timer-title">Our Journey Together</h2>
+                            <div class="valentine-time-container">
+                                <div class="valentine-time-box">
+                                    <div class="valentine-time-value" id="years">4</div>
+                                    <div class="valentine-time-label">Years</div>
+                                </div>
+                                <div class="valentine-time-box">
+                                    <div class="valentine-time-value" id="months">5</div>
+                                    <div class="valentine-time-label">Months</div>
+                                </div>
+                                <div class="valentine-time-box">
+                                    <div class="valentine-time-value" id="days">6</div>
+                                    <div class="valentine-time-label">Days</div>
+                                </div>
+                                <div class="valentine-time-box">
+                                    <div class="valentine-time-value" id="hours">12</div>
+                                    <div class="valentine-time-label">Hours</div>
+                                </div>
+                                <div class="valentine-time-box">
+                                    <div class="valentine-time-value" id="minutes">45</div>
+                                    <div class="valentine-time-label">Minutes</div>
+                                </div>
+                                <div class="valentine-time-box">
+                                    <div class="valentine-time-value" id="seconds">30</div>
+                                    <div class="valentine-time-label">Seconds</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <footer class="valentine-footer">
+                    <p>Made with <i class="fas fa-heart" style="color: #ff0844;"></i> | Forever & Always</p>
+                </footer>
+            </div>
+        </div>
+        
+        <!-- Hidden file inputs -->
+        <input type="file" id="herFileInput" class="valentine-file-input" accept="image/*">
+        <input type="file" id="myFileInput" class="valentine-file-input" accept="image/*">
+    </div>
+
+    <!-- File View Modal -->
+    <div class="file-modal" id="file-modal">
+        <div class="file-modal-content">
+            <div class="file-modal-header">
+                <div class="file-modal-title" id="file-modal-title">File Preview</div>
+                <div class="file-modal-close" onclick="closeFileModal()">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="file-modal-body" id="file-modal-body"></div>
+        </div>
+    </div>
+    
+    <!-- Forgot Password Modal -->
+    <div class="modal" id="forgot-modal">
+        <div class="modal-content">
+            <div class="close-modal" onclick="closeModal()">×</div>
+            <div class="modal-title"><i class="fas fa-key"></i> Reset Password</div>
+            <p style="margin-bottom: 20px; color: #666;">Enter your email to receive password reset instructions</p>
+            <input type="email" class="modal-input" id="reset-email" placeholder="Your Email">
+            <button class="modal-btn" onclick="resetPassword()">Send Reset Link</button>
+            <div id="reset-msg" style="margin-top:15px;"></div>
+        </div>
+    </div>
+    
+    <!-- Microphone Permission Modal -->
+    <div class="mic-permission-modal" id="mic-permission-modal">
+        <div class="mic-permission-content">
+            <h2 class="mic-permission-title"><i class="fas fa-microphone"></i> Microphone Access Required</h2>
+            <p class="mic-permission-text">Premium Note App needs access to your microphone to record audio notes. Please grant permission to use this feature.</p>
+            <button class="mic-permission-btn" id="allow-mic">Allow Access</button>
+            <button class="mic-permission-btn deny" id="deny-mic">Deny Access</button>
+        </div>
+    </div>
+
+<script>
+    // App state variables
+    let gmailVisible = true;
+    let editingIndex = -1;
+    let nextEntryId = {
+        happyDays: 1,
+        contacts: 1,
+        links: 1,
+        pictures: 1
+    };
+    
+    // Audio recording variables
+    let mediaRecorder;
+    let audioChunks = [];
+    let audioUrl = null;
+    let audioBlob = null;
+    let micPermissionRequested = false;
+    
+    // Security media arrays
+    let pictures = [];
+    
+    // Valentine's Day variables
+    let loveInterval;
+    let herProfilePic = null;
+    let myProfilePic = null;
+    
+    // DOM elements
+    const loginNickname = document.getElementById("login-nickname");
+    const loginPassword = document.getElementById("login-password");
+    const createNickname = document.getElementById("create-nickname");
+    const createPassword = document.getElementById("create-password");
+    const createGmail = document.getElementById("create-gmail");
+    const editTitle = document.getElementById("edit-title");
+    const editContent = document.getElementById("edit-content");
+    const menuToggle = document.getElementById("menu-toggle");
+    const navbar = document.getElementById("navbar");
+    const drawerNickname = document.getElementById("drawer-nickname");
+    const drawerGmail = document.getElementById("drawer-gmail");
+    const drawerAvatar = document.getElementById("drawer-avatar");
+    const profileUpload = document.getElementById("profile-upload");
+    const saveBtnTop = document.getElementById("save-btn-top");
+    const personalNote = document.getElementById("personal-note");
+    const pictureList = document.getElementById("picture-list");
+    const fileModal = document.getElementById("file-modal");
+    const fileModalTitle = document.getElementById("file-modal-title");
+    const fileModalBody = document.getElementById("file-modal-body");
+    const forgotModal = document.getElementById("forgot-modal");
+    const authMsg = document.getElementById("auth-msg");
+    const createMsg = document.getElementById("create-msg");
+    const resetMsg = document.getElementById("reset-msg");
+    const micPermissionModal = document.getElementById("mic-permission-modal");
+    const allowMicBtn = document.getElementById("allow-mic");
+    const denyMicBtn = document.getElementById("deny-mic");
+    
+    // Audio elements
+    const audioControlsContainer = document.getElementById("audio-controls-container");
+    const recordBtn = document.getElementById("record-btn");
+    const stopBtn = document.getElementById("stop-btn");
+    const deleteBtn = document.getElementById("delete-btn");
+    const recordingStatus = document.getElementById("recording-status");
+    const audioPlayerContainer = document.getElementById("audio-player-container");
+    const audioPlayer = document.getElementById("audio-player");
+
+    // Toggle password visibility
+    function togglePassword() {
+        loginPassword.type = loginPassword.type === "password" ? "text" : "password";
+    }
+    
+    // Show modal
+    function showForgetModal() {
+        forgotModal.style.display = "flex";
+        resetMsg.innerHTML = "";
+        document.getElementById("reset-email").value = "";
+    }
+    
+    // Close modal
+    function closeModal() {
+        forgotModal.style.display = "none";
+    }
+    
+    // Reset password
+    function resetPassword() {
+        const email = document.getElementById("reset-email").value.trim();
+        if (!email) {
+            resetMsg.innerHTML = '<div class="error-message">Please enter your email address</div>';
+            return;
+        }
+        
+        const users = JSON.parse(localStorage.getItem("users") || "{}");
+        const user = users[email];
+        
+        if (!user) {
+            resetMsg.innerHTML = '<div class="error-message">Email not found</div>';
+            return;
+        }
+        
+        resetMsg.innerHTML = `
+            <div class="success-message">
+                <p>Account information for ${email}:</p>
+                <p><strong>Username:</strong> ${user.nickname}</p>
+                <p><strong>Password:</strong> ${user.password}</p>
+            </div>
+        `;
+    }
+
+    // Navigate to screen
+    function nextScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        hideMenu();
+        
+        // Load data for the screen
+        if (id === 'screen-notes') {
+            loadNotes();
+        } else if (id === 'screen-happy') {
+            loadHappyDays();
+            calculateDays();
+        } else if (id === 'screen-personal') {
+            loadPersonalNote();
+        } else if (id === 'screen-contact') {
+            loadContacts();
+        } else if (id === 'screen-links') {
+            loadLinks();
+        } else if (id === 'screen-security-pictures') {
+            loadPictures();
+        } else if (id === 'screen-valentine') {
+            loadValentineData();
+        }
+        
+        // Hide audio controls when leaving note editor
+        if (id !== 'screen-edit-note') {
+            audioControlsContainer.style.display = "none";
+            resetAudioControls();
+        }
+    }
+    
+    // Create account
+    function createAccount() {
+        const nickname = createNickname.value.trim();
+        const password = createPassword.value.trim();
+        const gmail = createGmail.value.trim();
+        
+        if (!nickname || !password || !gmail) {
+            createMsg.innerHTML = '<div class="error-message">Please fill all fields</div>';
+            createMsg.style.display = "block";
+            return;
+        }
+        
+        // Validate password strength
+        if (password.length < 6) {
+            createMsg.innerHTML = '<div class="error-message">Password must be at least 6 characters</div>';
+            createMsg.style.display = "block";
+            return;
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(gmail)) {
+            createMsg.innerHTML = '<div class="error-message">Please enter a valid email address</div>';
+            createMsg.style.display = "block";
+            return;
+        }
+        
+        const users = JSON.parse(localStorage.getItem("users") || "{}");
+        
+        if (users[gmail]) {
+            createMsg.innerHTML = '<div class="error-message">This email is already registered</div>';
+            createMsg.style.display = "block";
+            return;
+        }
+        
+        users[gmail] = { nickname, password };
+        localStorage.setItem("users", JSON.stringify(users));
+        
+        createMsg.innerHTML = '<div class="success-message">Account created successfully!</div>';
+        createMsg.style.display = "block";
+        
+        setTimeout(() => {
+            nextScreen("screen-auth");
+            createMsg.style.display = "none";
+        }, 1500);
+    }
+
+    // Login
+    function loginAccount() {
+        const nickname = loginNickname.value.trim();
+        const password = loginPassword.value.trim();
+        
+        if (!nickname || !password) {
+            authMsg.innerHTML = '<div class="error-message">Please enter both nickname and password</div>';
+            authMsg.style.display = "block";
+            return;
+        }
+        
+        const users = JSON.parse(localStorage.getItem("users") || "{}");
+        
+        for (let gmail in users) {
+            const user = users[gmail];
+            if (user.nickname === nickname && user.password === password) {
+                localStorage.setItem("currentUser", gmail);
+                updateDrawerProfile();
+                nextScreen("screen-notes");
+                loadNotes();
+                return;
+            }
+        }
+        
+        authMsg.innerHTML = '<div class="error-message">Incorrect nickname or password</div>';
+        authMsg.style.display = "block";
+    }
+
+    // Logout
+    function logout() {
+        localStorage.removeItem("currentUser");
+        nextScreen("screen-auth");
+        authMsg.style.display = "none";
+    }
+
+    // Toggle menu
+    function toggleMenu(e) {
+        e.stopPropagation();
+        navbar.classList.toggle("show");
+        menuToggle.style.display = navbar.classList.contains("show") ? "none" : "block";
+    }
+
+    // Hide menu
+    function hideMenu() {
+        navbar.classList.remove("show");
+        menuToggle.style.display = "block";
+    }
+
+    // Toggle email visibility
+    function toggleGmail() {
+        gmailVisible = !gmailVisible;
+        updateDrawerProfile();
+    }
+
+    // Update profile
+    function updateDrawerProfile() {
+        const gmail = localStorage.getItem("currentUser");
+        if (!gmail) return;
+        
+        const users = JSON.parse(localStorage.getItem("users") || "{}");
+        const user = users[gmail];
+        
+        if (!user) return;
+        
+        drawerNickname.innerText = user.nickname;
+        drawerGmail.innerText = gmailVisible ? gmail : "•••••••••";
+        
+        if (user.profile) {
+            drawerAvatar.src = user.profile;
+            drawerAvatar.style.display = "block";
+        } else {
+            drawerAvatar.style.display = "none";
+        }
+    }
+
+    // Add profile image
+    function addProfile() {
+        profileUpload.click();
+    }
+
+    // Upload profile
+    function uploadProfile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const imgData = e.target.result;
+            const gmail = localStorage.getItem("currentUser");
+            const users = JSON.parse(localStorage.getItem("users") || "{}");
+            
+            if (users[gmail]) {
+                users[gmail].profile = imgData;
+                localStorage.setItem("users", JSON.stringify(users));
+            }
+            
+            updateDrawerProfile();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Create new note
+    function createNewNote() {
+        editingIndex = -1;
+        editTitle.value = "";
+        editContent.innerHTML = "";
+        saveBtnTop.style.display = "block";
+        nextScreen("screen-edit-note");
+        resetAudioControls();
+    }
+
+    // Save note
+    function saveNote() {
+        const title = editTitle.value.trim();
+        const content = editContent.innerHTML;
+        
+        if (!title || !content) {
+            alert("Please add a title and content to your note.");
+            return;
+        }
+        
+        const gmail = localStorage.getItem("currentUser");
+        const allNotes = JSON.parse(localStorage.getItem("notes") || "{}");
+        allNotes[gmail] = allNotes[gmail] || [];
+        
+        if (editingIndex === -1) {
+            allNotes[gmail].push({ title, content });
+        } else {
+            allNotes[gmail][editingIndex] = { title, content };
+        }
+        
+        localStorage.setItem("notes", JSON.stringify(allNotes));
+        
+        // Show success message
+        const successMsg = document.createElement('div');
+        successMsg.innerHTML = '<div class="success-message">✅ Note saved successfully!</div>';
+        editContent.appendChild(successMsg);
+        
+        setTimeout(() => {
+            nextScreen("screen-notes");
+            loadNotes();
+        }, 1500);
+    }
+    
+    // Load notes
+    function loadNotes() {
+        const gmail = localStorage.getItem("currentUser");
+        const allNotes = JSON.parse(localStorage.getItem("notes") || "{}");
+        const notes = allNotes[gmail] || [
+            
+        ];
+        const list = document.getElementById("note-list");
+        list.innerHTML = "";
+
+        if (notes.length === 0) {
+            list.innerHTML = `
+                <div style="text-align:center; padding:60px 20px; color:#777; font-size:18px;">
+                    <i class="fas fa-sticky-note" style="font-size:60px; opacity:0.5; margin-bottom:20px;"></i>
+                    <p>No notes yet. Create your first note!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        notes.forEach((note, index) => {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = note.content;
+            const previewText = tempDiv.textContent || tempDiv.innerText || "";
+            
+            const div = document.createElement("div");
+            div.className = "note-list-item";
+            
+            div.innerHTML = `
+                <div class="note-title">${note.title || 'Untitled Note'}</div>
+                <div class="note-preview">${previewText.slice(0, 100)}${previewText.length > 100 ? '...' : ''}</div>
+                <button class="open-note-btn" onclick="openNote(${index})">
+                    <i class="fas fa-external-link-alt"></i> Open
+                </button>
+            `;
+            
+            div.addEventListener('click', (e) => {
+                if (!e.target.closest('.open-note-btn')) {
+                    openNote(index);
+                }
+            });
+            
+            list.appendChild(div);
+        });
+    }
+    
+    // Open note
+    function openNote(index) {
+        editingIndex = index;
+        const gmail = localStorage.getItem("currentUser");
+        const allNotes = JSON.parse(localStorage.getItem("notes") || "{}");
+        const notes = allNotes[gmail] || [];
+        
+        if (notes[index]) {
+            const note = notes[index];
+            editTitle.value = note.title;
+            editContent.innerHTML = note.content;
+            saveBtnTop.style.display = "block";
+            nextScreen("screen-edit-note");
+        }
+    }
+    
+    // Audio recording functions
+    function requestMicrophoneAccess() {
+        micPermissionModal.style.display = "flex";
+    }
+    
+    function allowMicrophone() {
+        micPermissionModal.style.display = "none";
+        micPermissionRequested = true;
+        toggleAudioControls();
+    }
+    
+    function denyMicrophone() {
+        micPermissionModal.style.display = "none";
+        recordingStatus.textContent = "Microphone access denied. You can enable it later in browser settings.";
+        recordingStatus.style.color = "#f44336";
+    }
+    
+    function toggleAudioControls() {
+        audioControlsContainer.style.display = audioControlsContainer.style.display === "none" ? "block" : "none";
+    }
+    
+    function resetAudioControls() {
+        stopBtn.disabled = true;
+        deleteBtn.disabled = true;
+        recordingStatus.textContent = "Ready to record";
+        audioPlayerContainer.style.display = "none";
+        audioPlayer.src = "";
+        audioUrl = null;
+        audioBlob = null;
+    }
+    
+    async function startRecording() {
+        try {
+            // Request microphone access
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            // Reset previous recording
+            audioChunks = [];
+            mediaRecorder = new MediaRecorder(stream);
+            
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+            
+            mediaRecorder.onstop = () => {
+                audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                audioUrl = URL.createObjectURL(audioBlob);
+                
+                // Create audio element
+                audioPlayer.src = audioUrl;
+                audioPlayerContainer.style.display = "flex";
+                
+                // Add audio to note content
+                const audioHtml = `<div class="audio-container"><h3><i class="fas fa-volume-up"></i> Recorded Audio</h3><audio controls src="${audioUrl}"></audio><button class="audio-btn delete" onclick="this.parentNode.remove()"><i class="fas fa-trash"></i> Delete</button></div>`;
+                editContent.innerHTML += audioHtml;
+                
+                // Stop the stream
+                stream.getTracks().forEach(track => track.stop());
+            };
+            
+            // Start recording
+            mediaRecorder.start();
+            
+            // Update UI
+            recordBtn.disabled = true;
+            stopBtn.disabled = false;
+            deleteBtn.disabled = false;
+            recordingStatus.textContent = "Recording...";
+            recordingStatus.style.color = "#f44336";
+            
+        } catch (error) {
+            console.error("Error accessing microphone:", error);
+            recordingStatus.textContent = "Microphone access denied. Please allow access to record audio.";
+            recordingStatus.style.color = "#f44336";
+        }
+    }
+    
+    function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+            recordBtn.disabled = false;
+            recordingStatus.textContent = "Recording stopped";
+            recordingStatus.style.color = "#2196F3";
+        }
+    }
+    
+    function deleteRecording() {
+        resetAudioControls();
+    }
+    
+    // Security file upload functions
+    function uploadPicture(event) {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+        
+        const uploadedMedia = document.getElementById("uploaded-media");
+        
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (!file.type.startsWith('image/') && file.type !== 'application/pdf') continue;
+            
+            // Create file item
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            
+            // Generate sequential file name
+            const mediaCount = pictures.length + 1;
+            const ext = file.type === 'application/pdf' ? 'pdf' : file.name.split('.').pop();
+            const fileName = `${mediaCount}.${ext}`;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const mediaData = e.target.result;
+                
+                fileItem.innerHTML = `
+                    <div class="file-name">${fileName}</div>
+                    <div class="file-actions">
+                        <button class="security-item-action view" onclick="${file.type === 'application/pdf' ? 'viewPDF' : 'viewImage'}('${mediaData}', '${fileName}')">
+                            <i class="fas fa-eye"></i> Open
+                        </button>
+                        <button class="security-item-action download" onclick="downloadFile('${mediaData}', '${fileName}')">
+                            <i class="fas fa-download"></i> Save
+                        </button>
+                        <button class="security-item-action delete" onclick="this.parentNode.parentNode.remove(); removeMedia('${fileName}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                uploadedMedia.appendChild(fileItem);
+                
+                // Add to pictures array
+                pictures.push({
+                    id: `img_${Date.now()}`,
+                    name: fileName,
+                    data: mediaData,
+                    type: file.type === 'application/pdf' ? 'pdf' : 'image'
+                });
+                
+                // Save to localStorage
+                localStorage.setItem('pictures', JSON.stringify(pictures));
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    
+    function viewImage(url, name) {
+        fileModalTitle.textContent = name;
+        fileModalBody.innerHTML = `
+            <img src="${url}" style="max-width:100%; max-height:75vh; border-radius:10px; box-shadow:0 5px 20px rgba(0,0,0,0.2);">
+        `;
+        fileModal.style.display = "flex";
+    }
+    
+    function viewPDF(url, name) {
+        fileModalTitle.textContent = name;
+        fileModalBody.innerHTML = `
+            <iframe src="${url}" width="100%" height="600px" style="border:none;"></iframe>
+        `;
+        fileModal.style.display = "flex";
+    }
+    
+    function closeFileModal() {
+        fileModal.style.display = "none";
+    }
+    
+    function downloadFile(url, fileName) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+    
+    function loadPictures() {
+        const uploadedMedia = document.getElementById("uploaded-media");
+        uploadedMedia.innerHTML = "";
+        
+        pictures = JSON.parse(localStorage.getItem('pictures') || '[]');
+        
+        if (pictures.length === 0) {
+            uploadedMedia.innerHTML = '<div style="text-align:center; padding:20px; color:#777;">No media uploaded yet</div>';
+            return;
+        }
+        
+        pictures.forEach(media => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <div class="file-name">${media.name}</div>
+                <div class="file-actions">
+                    <button class="security-item-action view" onclick="${media.type === 'pdf' ? 'viewPDF' : 'viewImage'}('${media.data}', '${media.name}')">
+                        <i class="fas fa-eye"></i> Open
+                    </button>
+                    <button class="security-item-action download" onclick="downloadFile('${media.data}', '${media.name}')">
+                        <i class="fas fa-download"></i> Save
+                    </button>
+                    <button class="security-item-action delete" onclick="this.parentNode.parentNode.remove(); removeMedia('${media.name}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            uploadedMedia.appendChild(fileItem);
+        });
+    }
+    
+    function removeMedia(name) {
+        pictures = pictures.filter(media => media.name !== name);
+        localStorage.setItem('pictures', JSON.stringify(pictures));
+    }
+    
+    // Happy Days functions
+    function addHappyDay() {
+        const list = document.getElementById("happy-days-list");
+        const newId = nextEntryId.happyDays++;
+        
+        const entry = document.createElement('div');
+        entry.className = 'entry';
+        entry.innerHTML = `
+            <input type="text" placeholder="Date (dd.mm.yyyy)" value="" class="event-date">
+            <input type="text" placeholder="Event" value="" class="event-name">
+            <input type="text" placeholder="Time" value="" class="event-time">
+        `;
+        
+        list.appendChild(entry);
+    }
+
+    function removeLastHappyDay() {
+        const list = document.getElementById("happy-days-list");
+        if (list.children.length > 0) {
+            list.removeChild(list.lastChild);
+        }
+    }
+
+    function saveHappyDays() {
+        const gmail = localStorage.getItem("currentUser");
+        if (!gmail) return;
+        
+        const events = [];
+        document.querySelectorAll('#happy-days-list .entry').forEach(entry => {
+            const date = entry.querySelector('.event-date').value;
+            const name = entry.querySelector('.event-name').value;
+            const time = entry.querySelector('.event-time').value;
+            
+            if (date || name || time) {
+                events.push({ date, name, time });
+            }
+        });
+        
+        localStorage.setItem(`happyDays_${gmail}`, JSON.stringify(events));
+        calculateDays();
+    }
+
+    function loadHappyDays() {
+        const gmail = localStorage.getItem("currentUser");
+        if (!gmail) return;
+        
+        const list = document.getElementById("happy-days-list");
+        list.innerHTML = "";
+        
+        const events = JSON.parse(localStorage.getItem(`happyDays_${gmail}`) || "[]");
+        
+        if (events.length === 0) {
+            const defaultEvents = [
+    
+            ];
+            
+            defaultEvents.forEach(event => {
+                const entry = document.createElement('div');
+                entry.className = 'entry';
+                entry.innerHTML = `
+                    <input type="text" placeholder="Date (dd.mm.yyyy)" value="${event.date}" class="event-date">
+                    <input type="text" placeholder="Event" value="${event.name}" class="event-name">
+                    <input type="text" placeholder="Time" value="${event.time}" class="event-time">
+                `;
+                list.appendChild(entry);
+            });
+        } else {
+            events.forEach(event => {
+                const entry = document.createElement('div');
+                entry.className = 'entry';
+                entry.innerHTML = `
+                    <input type="text" placeholder="Date (dd.mm.yyyy)" value="${event.date}" class="event-date">
+                    <input type="text" placeholder="Event" value="${event.name}" class="event-name">
+                    <input type="text" placeholder="Time" value="${event.time}" class="event-time">
+                `;
+                list.appendChild(entry);
+            });
+        }
+    }
+    
+    function calculateDays() {
+        const container = document.getElementById("days-calculation");
+        container.innerHTML = "";
+        
+        const events = [];
+        document.querySelectorAll('#happy-days-list .entry').forEach(entry => {
+            const date = entry.querySelector('.event-date').value;
+            const name = entry.querySelector('.event-name').value;
+            
+            if (date && name) {
+                events.push({ date, name });
+            }
+        });
+        
+        if (events.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:30px 0; color:#777; font-size:17px;">Add events to see calculations</div>';
+            return;
+        }
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        events.forEach(event => {
+            try {
+                const [day, month, year] = event.date.split('.').map(Number);
+                const eventDate = new Date(year, month - 1, day);
+                eventDate.setHours(0, 0, 0, 0);
+                
+                let timeDiff = eventDate.getTime() - today.getTime();
+                let daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                
+                // Handle past events
+                if (daysDiff < 0) {
+                    daysDiff = Math.abs(daysDiff);
+                }
+                
+                const item = document.createElement('div');
+                item.className = 'calculation-item';
+                item.style.marginBottom = "15px";
+                item.style.padding = "15px";
+                item.style.background = "#f9f9f9";
+                item.style.borderRadius = "10px";
+                item.innerHTML = `
+                    <div style="font-weight:700; font-size:18px; color:#2196F3; margin-bottom:8px;">${event.name}</div>
+                    <div style="margin-bottom:5px; font-size:16px;">Date: ${event.date}</div>
+                    <div style="font-size:17px;">Days ${timeDiff > 0 ? 'remaining' : 'since'}: <span style="font-weight:700; color:#2196F3;">${daysDiff}</span></div>
+                `;
+                
+                container.appendChild(item);
+            } catch (e) {
+                console.error("Error calculating days for event:", event, e);
+            }
+        });
+    }
+    
+    // Personal note functions
+    function savePersonalNote() {
+        const gmail = localStorage.getItem("currentUser");
+        if (!gmail) return;
+        
+        const content = personalNote.value;
+        localStorage.setItem(`personal_${gmail}`, content);
+        
+        const msg = document.createElement('div');
+        msg.innerHTML = '<div class="success-message">Personal note saved successfully!</div>';
+        personalNote.parentNode.insertBefore(msg, personalNote.nextSibling);
+        
+        setTimeout(() => {
+            msg.remove();
+        }, 3000);
+    }
+
+    function loadPersonalNote() {
+        const gmail = localStorage.getItem("currentUser");
+        if (!gmail) return;
+        
+        const content = localStorage.getItem(`personal_${gmail}`) || '';
+        personalNote.value = content;
+    }
+    
+    // Contact functions
+    function addContact() {
+        const list = document.getElementById("contact-list");
+        const newId = nextEntryId.contacts++;
+        
+        const entry = document.createElement('div');
+        entry.className = 'contact-entry';
+        entry.innerHTML = `
+            <input type="text" placeholder="Phone Number" value="" class="contact-phone">
+            <input type="text" placeholder="Name" value="" class="contact-name">
+        `;
+        
+        list.appendChild(entry);
+    }
+
+    function removeLastContact() {
+        const list = document.getElementById("contact-list");
+        if (list.children.length > 0) {
+            list.removeChild(list.lastChild);
+        }
+    }
+
+    function saveContacts() {
+        const gmail = localStorage.getItem("currentUser");
+        if (!gmail) return;
+        
+        const contacts = [];
+        document.querySelectorAll('#contact-list .contact-entry').forEach(entry => {
+            const phone = entry.querySelector('.contact-phone').value;
+            const name = entry.querySelector('.contact-name').value;
+            
+            if (phone || name) {
+                contacts.push({ phone, name });
+            }
+        });
+        
+        localStorage.setItem(`contacts_${gmail}`, JSON.stringify(contacts));
+        
+        // Show success message
+        const successMsg = document.createElement('div');
+        successMsg.innerHTML = '<div class="success-message">✅ Contacts saved successfully!</div>';
+        successMsg.style.marginTop = '20px';
+        document.querySelector('.grid-item').appendChild(successMsg);
+        
+        setTimeout(() => {
+            successMsg.remove();
+        }, 3000);
+    }
+
+    function loadContacts() {
+        const gmail = localStorage.getItem("currentUser");
+        if (!gmail) return;
+        
+        const list = document.getElementById("contact-list");
+        list.innerHTML = "";
+        
+        const contacts = JSON.parse(localStorage.getItem(`contacts_${gmail}`) || "[]");
+        
+        if (contacts.length === 0) {
+            const defaultContacts = [
+
+            ];
+            
+            defaultContacts.forEach(contact => {
+                const entry = document.createElement('div');
+                entry.className = 'contact-entry';
+                entry.innerHTML = `
+                    <input type="text" placeholder="Phone Number" value="${contact.phone}" class="contact-phone">
+                    <input type="text" placeholder="Name" value="${contact.name}" class="contact-name">
+                `;
+                list.appendChild(entry);
+            });
+        } else {
+            contacts.forEach(contact => {
+                const entry = document.createElement('div');
+                entry.className = 'contact-entry';
+                entry.innerHTML = `
+                    <input type="text" placeholder="Phone Number" value="${contact.phone}" class="contact-phone">
+                    <input type="text" placeholder="Name" value="${contact.name}" class="contact-name">
+                `;
+                list.appendChild(entry);
+            });
+        }
+    }
+    
+    // Link functions
+    function addLink() {
+        const list = document.getElementById("link-list");
+        const newId = nextEntryId.links++;
+        
+        const entry = document.createElement('div');
+        entry.className = 'link-entry';
+        entry.innerHTML = `
+            <input type="text" placeholder="Name" value="" class="link-name">
+            <input type="text" placeholder="Link URL" value="" class="link-url">
+            <input type="text" placeholder="Password" value="" class="link-password">
+        `;
+        
+        list.appendChild(entry);
+    }
+
+    function removeLastLink() {
+        const list = document.getElementById("link-list");
+        if (list.children.length > 0) {
+            list.removeChild(list.lastChild);
+        }
+    }
+
+    function saveLinks() {
+        const gmail = localStorage.getItem("currentUser");
+        if (!gmail) return;
+        
+        const links = [];
+        document.querySelectorAll('#link-list .link-entry').forEach(entry => {
+            const name = entry.querySelector('.link-name').value;
+            const url = entry.querySelector('.link-url').value;
+            const password = entry.querySelector('.link-password').value;
+            
+            if (name || url || password) {
+                links.push({ name, url, password });
+            }
+        });
+        
+        localStorage.setItem(`links_${gmail}`, JSON.stringify(links));
+        
+        // Show success message
+        const successMsg = document.createElement('div');
+        successMsg.innerHTML = '<div class="success-message">✅ Links saved successfully!</div>';
+        successMsg.style.marginTop = '20px';
+        document.querySelector('.grid-item').appendChild(successMsg);
+        
+        setTimeout(() => {
+            successMsg.remove();
+        }, 3000);
+    }
+
+    function loadLinks() {
+        const gmail = localStorage.getItem("currentUser");
+        if (!gmail) return;
+        
+        const list = document.getElementById("link-list");
+        list.innerHTML = "";
+        
+        const links = JSON.parse(localStorage.getItem(`links_${gmail}`) || "[]");
+        
+        if (links.length === 0) {
+            const defaultLinks = [
+
+            ];
+            
+            defaultLinks.forEach(link => {
+                const entry = document.createElement('div');
+                entry.className = 'link-entry';
+                entry.innerHTML = `
+                    <input type="text" placeholder="Name" value="${link.name}" class="link-name">
+                    <input type="text" placeholder="Link URL" value="${link.url}" class="link-url">
+                    <input type="text" placeholder="Password" value="${link.password}" class="link-password">
+                `;
+                list.appendChild(entry);
+            });
+        } else {
+            links.forEach(link => {
+                const entry = document.createElement('div');
+                entry.className = 'link-entry';
+                entry.innerHTML = `
+                    <input type="text" placeholder="Name" value="${link.name}" class="link-name">
+                    <input type="text" placeholder="Link URL" value="${link.url}" class="link-url">
+                    <input type="text" placeholder="Password" value="${link.password}" class="link-password">
+                `;
+                list.appendChild(entry);
+            });
+        }
+    }
+
+    // Valentine's Day Love Calculator functions
+    function loadValentineData() {
+        const gmail = localStorage.getItem("currentUser");
+        if (!gmail) return;
+        
+        const valentineData = JSON.parse(localStorage.getItem(`valentine_${gmail}`) || "{}");
+        
+        // Load profile pictures
+        if (valentineData.herProfilePic) {
+            const herPic = document.getElementById("herProfilePic");
+            herPic.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = valentineData.herProfilePic;
+            herPic.appendChild(img);
+        }
+        
+        if (valentineData.myProfilePic) {
+            const myPic = document.getElementById("myProfilePic");
+            myPic.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = valentineData.myProfilePic;
+            myPic.appendChild(img);
+        }
+        
+        // Load birthday data
+        if (valentineData.herBirthday) {
+            document.getElementById("herDay").value = valentineData.herBirthday.day;
+            document.getElementById("herMonth").value = valentineData.herBirthday.month;
+            document.getElementById("herYear").value = valentineData.herBirthday.year;
+            calculateAge("her");
+        }
+        
+        if (valentineData.myBirthday) {
+            document.getElementById("myDay").value = valentineData.myBirthday.day;
+            document.getElementById("myMonth").value = valentineData.myBirthday.month;
+            document.getElementById("myYear").value = valentineData.myBirthday.year;
+            calculateAge("my");
+        }
+        
+        // Load love date
+        if (valentineData.loveDate) {
+            document.getElementById("loveDate").value = valentineData.loveDate;
+        }
+        
+        if (valentineData.loveTime) {
+            document.getElementById("loveTime").value = valentineData.loveTime;
+        }
+        
+        // Start the timer if we have a date
+        if (valentineData.loveDate && valentineData.loveTime) {
+            const startDateTime = valentineData.loveDate + "T" + valentineData.loveTime;
+            updateLoveTimer(startDateTime);
+            if (loveInterval) clearInterval(loveInterval);
+            loveInterval = setInterval(() => updateLoveTimer(startDateTime), 1000);
+        }
+        
+        // Set up event listeners for profile picture uploads
+        document.getElementById('herProfilePic').addEventListener('click', () => {
+            document.getElementById('herFileInput').click();
+        });
+        
+        document.getElementById('myProfilePic').addEventListener('click', () => {
+            document.getElementById('myFileInput').click();
+        });
+        
+        document.getElementById('herFileInput').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const profilePic = document.getElementById('herProfilePic');
+                    profilePic.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    profilePic.appendChild(img);
+                    
+                    // Save to localStorage
+                    const gmail = localStorage.getItem("currentUser");
+                    if (gmail) {
+                        const valentineData = JSON.parse(localStorage.getItem(`valentine_${gmail}`) || "{}");
+                        valentineData.herProfilePic = e.target.result;
+                        localStorage.setItem(`valentine_${gmail}`, JSON.stringify(valentineData));
+                    }
+                    
+                    // Show message
+                    const message = document.getElementById('herMessage');
+                    message.textContent = "Her profile updated!";
+                    message.classList.add('show');
+                    setTimeout(() => {
+                        message.classList.remove('show');
+                    }, 3000);
+                }
+                
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+        
+        document.getElementById('myFileInput').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const profilePic = document.getElementById('myProfilePic');
+                    profilePic.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    profilePic.appendChild(img);
+                    
+                    // Save to localStorage
+                    const gmail = localStorage.getItem("currentUser");
+                    if (gmail) {
+                        const valentineData = JSON.parse(localStorage.getItem(`valentine_${gmail}`) || "{}");
+                        valentineData.myProfilePic = e.target.result;
+                        localStorage.setItem(`valentine_${gmail}`, JSON.stringify(valentineData));
+                    }
+                    
+                    // Show message
+                    const message = document.getElementById('myMessage');
+                    message.textContent = "My profile updated!";
+                    message.classList.add('show');
+                    setTimeout(() => {
+                        message.classList.remove('show');
+                    }, 3000);
+                }
+                
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+        
+        // Set up event listeners for birthday inputs
+        ['her', 'my'].forEach(person => {
+            ['Day', 'Month', 'Year'].forEach(unit => {
+                const element = document.getElementById(`${person}${unit}`);
+                element.addEventListener('input', () => {
+                    const day = document.getElementById(`${person}Day`).value;
+                    const month = document.getElementById(`${person}Month`).value;
+                    const year = document.getElementById(`${person}Year`).value;
+                    
+                    if (day && month && year) {
+                        calculateAge(person);
+                        
+                        // Save to localStorage
+                        const gmail = localStorage.getItem("currentUser");
+                        if (gmail) {
+                            const valentineData = JSON.parse(localStorage.getItem(`valentine_${gmail}`) || "{}");
+                            valentineData[`${person}Birthday`] = { day, month, year };
+                            localStorage.setItem(`valentine_${gmail}`, JSON.stringify(valentineData));
+                        }
+                        
+                        // Show message
+                        const message = document.getElementById(`${person}Message`);
+                        message.textContent = `${person === 'her' ? 'Her' : 'My'} profile updated!`;
+                        message.classList.add('show');
+                        setTimeout(() => {
+                            message.classList.remove('show');
+                        }, 3000);
+                    }
+                });
+            });
+        });
+        
+        // Set up event listener for calculate button
+        document.getElementById('calculateBtn').addEventListener('click', () => {
+            const loveDate = document.getElementById('loveDate').value;
+            const loveTime = document.getElementById('loveTime').value;
+            
+            if (!loveDate || !loveTime) {
+                document.getElementById('loveMessage').textContent = "Please select both date and time!";
+                document.getElementById('loveMessage').classList.add('show');
+                setTimeout(() => {
+                    document.getElementById('loveMessage').classList.remove('show');
+                }, 3000);
+                return;
+            }
+            
+            // Combine date and time
+            const startDateTime = loveDate + "T" + loveTime;
+            
+            // Save to localStorage
+            const gmail = localStorage.getItem("currentUser");
+            if (gmail) {
+                const valentineData = JSON.parse(localStorage.getItem(`valentine_${gmail}`) || "{}");
+                valentineData.loveDate = loveDate;
+                valentineData.loveTime = loveTime;
+                localStorage.setItem(`valentine_${gmail}`, JSON.stringify(valentineData));
+            }
+            
+            // Clear any existing interval
+            if (loveInterval) {
+                clearInterval(loveInterval);
+            }
+            
+            // Show success message
+            document.getElementById('loveMessage').textContent = "Love journey calculated!";
+            document.getElementById('loveMessage').classList.add('show');
+            setTimeout(() => {
+                document.getElementById('loveMessage').classList.remove('show');
+            }, 3000);
+            
+            // Start updating the timer
+            updateLoveTimer(startDateTime);
+            loveInterval = setInterval(() => updateLoveTimer(startDateTime), 1000);
+        });
+        
+        // Create floating hearts
+        createHearts();
+        setInterval(createHearts, 1000);
+    }
+    
+    function calculateAge(person) {
+        const day = document.getElementById(`${person}Day`).value;
+        const month = document.getElementById(`${person}Month`).value;
+        const year = document.getElementById(`${person}Year`).value;
+        const ageElement = document.getElementById(`${person}Age`);
+        
+        if (day && month && year) {
+            const birthDate = new Date(year, month - 1, day);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            
+            ageElement.textContent = age;
+        }
+    }
+    
+    function updateLoveTimer(startDateTime) {
+        const startDate = new Date(startDateTime);
+        const now = new Date();
+        
+        let diff = now - startDate;
+        
+        // Calculate years
+        const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+        diff -= years * (1000 * 60 * 60 * 24 * 365.25);
+        
+        // Calculate months
+        const months = Math.floor(diff / (1000 * 60 * 60 * 24 * 30.44));
+        diff -= months * (1000 * 60 * 60 * 24 * 30.44);
+        
+        // Calculate days
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        diff -= days * (1000 * 60 * 60 * 24);
+        
+        // Calculate hours
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        diff -= hours * (1000 * 60 * 60);
+        
+        // Calculate minutes
+        const minutes = Math.floor(diff / (1000 * 60));
+        diff -= minutes * (1000 * 60);
+        
+        // Calculate seconds
+        const seconds = Math.floor(diff / 1000);
+        
+        // Update the display
+        document.getElementById('years').textContent = years;
+        document.getElementById('months').textContent = months;
+        document.getElementById('days').textContent = days;
+        document.getElementById('hours').textContent = hours;
+        document.getElementById('minutes').textContent = minutes;
+        document.getElementById('seconds').textContent = seconds;
+    }
+    
+    function createHearts() {
+        const container = document.getElementById("screen-valentine");
+        const heartCount = 10;
+        
+        for (let i = 0; i < heartCount; i++) {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+            
+            // Random position
+            const leftPos = Math.random() * 100;
+            heart.style.left = `${leftPos}vw`;
+            
+            // Random size
+            const size = Math.random() * 10 + 4;
+            heart.style.width = `${size}px`;
+            heart.style.height = `${size}px`;
+            
+            // Random animation duration
+            const duration = Math.random() * 5 + 5;
+            heart.style.animationDuration = `${duration}s`;
+            
+            // Random delay
+            const delay = Math.random() * 5;
+            heart.style.animationDelay = `${delay}s`;
+            
+            // Random color
+            const colors = ['#ff0844', '#ff6b8b', '#ffafbd'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            heart.style.background = color;
+            
+            container.appendChild(heart);
+            
+            // Remove heart after animation completes
+            setTimeout(() => {
+                heart.remove();
+            }, (duration + delay) * 1000);
+        }
+    }
+    
+    // Search functionality
+    document.getElementById("global-search").addEventListener("input", searchAllNotes);
+
+    function searchAllNotes() {
+      const term = document.getElementById("global-search").value.toLowerCase();
+      const gmail = localStorage.getItem("currentUser");
+      const results = [];
+
+      // Slide 2 Notes
+      const allNotes = JSON.parse(localStorage.getItem("notes") || "{}")[gmail] || [];
+      allNotes.forEach((note, i) => {
+        if (note.title.toLowerCase().includes(term) || note.content.toLowerCase().includes(term)) {
+          results.push({ type: "Note", title: note.title, index: i });
+        }
+      });
+
+      // Slide 5 - Happy Days
+      const happy = JSON.parse(localStorage.getItem(`happyDays_${gmail}`) || "[]");
+      happy.forEach((h, i) => {
+        const text = `${h.name} ${h.date} ${h.time}`.toLowerCase();
+        if (text.includes(term)) {
+          results.push({ type: "Happy Day", title: `${h.name} (${h.date})` });
+        }
+      });
+
+      // Slide 6 - Personal
+      const personal = localStorage.getItem("personal_" + gmail) || "";
+      if (personal.toLowerCase().includes(term)) {
+        results.push({ type: "Personal Note", title: "My Personal Notes" });
+      }
+
+      // Slide 7 - Contact
+      const contacts = JSON.parse(localStorage.getItem(`contacts_${gmail}`) || "[]");
+      contacts.forEach(c => {
+        const text = `${c.name} ${c.phone}`.toLowerCase();
+        if (text.includes(term)) {
+          results.push({ type: "Contact", title: `${c.name} (${c.phone})` });
+        }
+      });
+
+      // Slide 8 - Links
+      const links = JSON.parse(localStorage.getItem(`links_${gmail}`) || "[]");
+      links.forEach(l => {
+        const text = `${l.title} ${l.url}`.toLowerCase();
+        if (text.includes(term)) {
+          results.push({ type: "Link", title: `${l.title}` });
+        }
+      });
+
+      // Slide 12 - Valentine
+      const valentine = JSON.parse(localStorage.getItem(`valentine_${gmail}`) || "{}");
+      if (valentine.herBirthday || valentine.myBirthday || valentine.loveDate) {
+        results.push({ type: "Love Calculator", title: "Our Love Journey" });
+      }
+
+      showSearchResults(results);
+    }
+
+    function showSearchResults(results) {
+      const list = document.getElementById("note-list");
+      list.innerHTML = "";
+
+      if (results.length === 0) {
+        list.innerHTML = `<div style="padding: 20px; text-align:center; color:#777;">🔍 No results found.</div>`;
+        return;
+      }
+
+      results.forEach(res => {
+        const div = document.createElement("div");
+        div.className = "note-list-item";
+        div.innerHTML = `<div class="note-title">${res.type}</div><div class="note-preview">${res.title}</div>`;
+
+        // Only for notes, we can reopen them directly
+        if (res.type === "Note") {
+          div.addEventListener("click", () => openNote(res.index));
+        } else if (res.type === "Love Calculator") {
+          div.addEventListener("click", () => nextScreen('screen-valentine'));
+        } else {
+          div.addEventListener("click", () => alert(`${res.type}: ${res.title}`));
+        }
+
+        list.appendChild(div);
+      });
+    }
+
+    // Initialize app
+    window.onload = () => {
+        // Create demo account if not exists
+        const users = JSON.parse(localStorage.getItem("users") || "{}");
+        if (!users[""]) {
+            users[""] = { 
+                nickname: "", 
+                password: "" 
+            };
+            localStorage.setItem("users", JSON.stringify(users));
+        }
+        
+        if (localStorage.getItem("currentUser")) {
+            updateDrawerProfile();
+            nextScreen("screen-notes");
+            loadNotes();
+        }
+        
+        // Load security files
+        pictures = JSON.parse(localStorage.getItem('pictures') || '[]');
+        
+        // Close drawer when clicking outside
+        document.body.addEventListener('click', (e) => {
+            if (!navbar.contains(e.target) && !menuToggle.contains(e.target)) {
+                hideMenu();
+            }
+        });
+        
+        // Check browser support for MediaRecorder
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !MediaRecorder) {
+            document.getElementById('audio-btn').disabled = true;
+            document.getElementById('audio-btn').innerHTML = '<i class="fas fa-microphone-slash"></i> Audio Not Supported';
+        }
+        
+        // Set up microphone permission handlers
+        allowMicBtn.addEventListener('click', allowMicrophone);
+        denyMicBtn.addEventListener('click', denyMicrophone);
+    };
+</script>
+</body>
+</html>
